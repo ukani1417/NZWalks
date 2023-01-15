@@ -21,7 +21,7 @@ namespace NZWalks.api.Repositories
             return region;
         }
 
-       
+
         public async Task<Region> DeleteAsync(Guid id)
         {
             var region = await nZWalksDbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);

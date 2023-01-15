@@ -2,10 +2,10 @@
 {
     public class Region
     {
-        public Guid Id { get; set; }    
-        public string Name { get; set; }    
-        public string Code  { get; set; }
-        public double Area { get; set; }    
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Code { get; set; }
+        public double Area { get; set; }
         public double Lat { get; set; }
 
         public double Long { get; set; }
@@ -14,6 +14,6 @@
 
         // Navigation property
 
-        public IEnumerable<Walk> walks { get; set; }    
+        public IEnumerable<Walk> walks { get; set; }
     }
 }

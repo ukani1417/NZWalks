@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using NZWalks.api.Models.Domain;
+using Microsoft.EntityFrameworkCore;
 using NZWalks.api.Models.DTO;
 using NZWalks.api.Repositories;
-using System.Data;
 
 namespace NZWalks.api.Controllers
 {
@@ -15,31 +12,31 @@ namespace NZWalks.api.Controllers
     {
         private readonly IRegionRepository regionRepository;
         private readonly IMapper mapper;
-        public RegionsController(IRegionRepository regionRepository,IMapper mapper)
+        public RegionsController(IRegionRepository regionRepository, IMapper mapper)
         {
             this.regionRepository = regionRepository;
             this.mapper = mapper;
         }
 
-        [HttpGet]   
+        [HttpGet]
         public async Task<IActionResult> GetAllregionsAsync()
         {
-            
+
             var regions = await regionRepository.GetAllAsync();
 
             // return DTO regions
-            var regionsDTO =  mapper.Map<List<Models.DTO.Region>>(regions);
+            var regionsDTO = mapper.Map<List<Models.DTO.Region>>(regions);
             return Ok(regionsDTO);
         }
 
         [HttpGet]
-        [Route("{id:Guid}")]
+        [Route("{id:guid}")]
         [ActionName("GetRegionAsync")]
         public async Task<IActionResult> GetRegionAsync(Guid id)
         {
             var region = await regionRepository.GetAsync(id);
 
-            if(region == null)
+            if (region == null)
             {
                 return NotFound();
             }
@@ -61,6 +58,11 @@ namespace NZWalks.api.Controllers
         [HttpPost]
         public async Task<IActionResult> AddRegionAsync(AddRegionRequest regionrequest)
         {
+            if (validateAddRegionRequestAsync(regionrequest) == false)
+            {
+                return BadRequest(ModelState);
+            }
+
             var region = new Models.Domain.Region()
             {
                 Code = regionrequest.Code,
@@ -89,7 +91,7 @@ namespace NZWalks.api.Controllers
 
         [HttpDelete]
         [Route("{id:guid}")]
-       
+
         public async Task<IActionResult> DeleteRegionAsync(Guid id)
         {
             // Get region from database
@@ -120,10 +122,13 @@ namespace NZWalks.api.Controllers
 
         [HttpPut]
         [Route("{id:guid}")]
-       
+
         public async Task<IActionResult> UpdateRegionAsync([FromRoute] Guid id, Models.DTO.UpdateRegionRequest updateRegionRequest)
         {
-           
+            if(validateUpdateRegionRequest(id,updateRegionRequest) == false)
+            {
+                return BadRequest(ModelState);
+            }
             var region = new Models.Domain.Region()
             {
                 Code = updateRegionRequest.Code,
@@ -161,6 +166,80 @@ namespace NZWalks.api.Controllers
             // Return Ok response
             return Ok(regionDTO);
         }
+        #region Validator
+
+        // Add validator
+        private bool validateAddRegionRequestAsync(AddRegionRequest request)
+        {
+            if (request == null)
+            {
+                ModelState.AddModelError(nameof(request), $"Add Request can not be empty");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(request.Code))
+            {
+                ModelState.AddModelError(nameof(request.Code), $"{nameof(request.Code)} can not consists be null or empty or whitespace");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                ModelState.AddModelError(nameof(request.Name), $"{nameof(request.Name)} can not consists be null or empty or whitespace");
+            }
+
+            if (request.Area <= 0.0)
+            {
+                ModelState.AddModelError(nameof(request.Area), $"{nameof(request.Area)} can not be zero or negative");
+            }
+
+            if (request.Population <= 0.0)
+            {
+                ModelState.AddModelError(nameof(request.Population), $"{nameof(request.Population)} can not be zero or negative");
+            }
+
+            if (ModelState.ErrorCount > 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        //Update Validator
+        private bool validateUpdateRegionRequest(Guid id, UpdateRegionRequest request)
+        {
+            if (request == null)
+            {
+                ModelState.AddModelError(nameof(request), $"Update Request can not be empty");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(request.Code))
+            {
+                ModelState.AddModelError(nameof(request.Code), $"{nameof(request.Code)} can not consists be null or empty or whitespace");
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                ModelState.AddModelError(nameof(request.Name), $"{nameof(request.Name)} can not consists be null or empty or whitespace");
+            }
+
+            if (request.Area <= 0.0)
+            {
+                ModelState.AddModelError(nameof(request.Area), $"{nameof(request.Area)} can not be zero or negative");
+            }
+
+            if (request.Population <= 0.0)
+            {
+                ModelState.AddModelError(nameof(request.Population), $"{nameof(request.Population)} can not be zero or negative");
+            }
+
+            if (ModelState.ErrorCount > 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        #endregion
+
 
     }
 }
